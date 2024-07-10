@@ -39,13 +39,27 @@ function getRandomHexColor() {
   return color;
 }
 
-function setBackgroundColor(cell) {
-  if (currentColorMode === 'random') {
-      cell.style.backgroundColor = getRandomHexColor();
+function setBackgroundColor(event) {
+  const cell = event.target;
+  if (!cell.classList.contains("active")) {
+      if (currentColorMode === 'random') {
+          cell.dataset.initialColor = getRandomHexColor();
+      } else {
+          cell.dataset.initialColor = 'black';
+      }
+      cell.classList.add("active");
+      cell.style.backgroundColor = cell.dataset.initialColor;
+      cell.style.opacity = 0.1;
   } else {
-      cell.style.backgroundColor = 'black';
+      let opacity = parseFloat(cell.style.opacity);
+      if (opacity < 1) {
+          opacity += 0.1;
+          cell.style.opacity = `${opacity}`;
+      }
   }
 }
+
+
 function createGridCells() {
   sketchArea.innerHTML = "";
   const numberOfSquares = squaresPerSide * squaresPerSide;
@@ -56,18 +70,7 @@ function createGridCells() {
     gridCell.style.width = gridCell.style.height = widthOrHeight;
     gridCell.classList.add("cell");
     sketchArea.appendChild(gridCell);
-    gridCell.addEventListener("mouseover", () => {
-      setBackgroundColor(gridCell);
-      if (gridCell.classList.contains("active")) {
-        let opacity = parseFloat(gridCell.style.opacity);
-        opacity += 0.1;
-        gridCell.style.opacity = `${opacity}`;
-    }
-    else {
-        gridCell.classList.add("active");
-        gridCell.style.opacity = "0.1";
-    }
-    });
+   gridCell.addEventListener("mouseover", setBackgroundColor);
   }
 }
 
@@ -77,6 +80,7 @@ function erase_colors() {
     cell.style.backgroundColor = "";
     cell.style.opacity = "1";
     cell.classList.remove("active");
+    delete cell.dataset.initialColor;
   });
 }
 
@@ -84,11 +88,3 @@ erase_btn.addEventListener("click", function () {
   erase_colors();
 });
 
-function hoverEffect() {
-  const allBox = document.querySelectorAll(".box");
-  allBox.forEach((box) => {
-    box.addEventListener("mouseover", function () {
-      this.style.backgroundColor = hoverColor;
-    });
-  });
-}
